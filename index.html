@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مطعم M&S - المنيو الفاخر</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background-color: #080808; color: #f5f5f5; padding-bottom: 100px; }
+        
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: linear-gradient(135deg, #050505, #1a150c);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; color: #fff; text-align: center; padding: 20px;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        #splash-screen.hidden { opacity: 0; visibility: hidden; }
+        .splash-logo { font-size: 3.5rem; font-weight: 900; color: #d4af37; margin-bottom: 10px; text-shadow: 0 0 25px rgba(212, 175, 55, 0.5); letter-spacing: 2px; }
+        .splash-sub { font-size: 1.2rem; color: #aaa; margin-bottom: 30px; }
+        .btn-view-menu {
+            background: linear-gradient(135deg, #d4af37, #9c7819); color: #000; border: none;
+            padding: 14px 45px; font-size: 1.2rem; font-weight: 900; border-radius: 35px; cursor: pointer;
+            box-shadow: 0 5px 25px rgba(212, 175, 55, 0.4); transition: 0.3s;
+        }
+        .btn-view-menu:hover { transform: scale(1.05); box-shadow: 0 8px 30px rgba(212, 175, 55, 0.6); }
+
+        header { background: #111; border-bottom: 2px solid #d4af37; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.8); }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        header h1 { font-size: 2rem; color: #d4af37; margin: 0 auto; font-weight: 900; letter-spacing: 1px; }
+        
+        .categories-nav { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+        .cat-btn { background: #1a1a1a; color: #ccc; border: 1px solid #333; padding: 6px 18px; border-radius: 20px; cursor: pointer; font-weight: 700; transition: 0.2s; }
+        .cat-btn.active, .cat-btn:hover { background: #d4af37; color: #000; border-color: #d4af37; }
+        
+        .admin-trigger-btn { background: transparent; color: #d4af37; border: 1px dashed #d4af37; padding: 5px 14px; border-radius: 15px; font-size: 0.85rem; cursor: pointer; font-weight: 700; transition: 0.2s; }
+        .admin-trigger-btn:hover { background: rgba(212,175,55,0.1); }
+
+        .container { max-width: 1200px; margin: 25px auto; padding: 0 15px; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        
+        .menu-item { background: #141414; border: 1px solid #222; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .menu-item:hover { border-color: #d4af37; transform: translateY(-3px); }
+        .menu-item img { width: 100%; height: 160px; object-fit: cover; }
+        
+        .menu-item-content { padding: 14px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .menu-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .menu-item-title { font-size: 1.1rem; font-weight: 700; color: #fff; }
+        .menu-item-price { font-weight: 900; color: #d4af37; font-size: 1.05rem; }
+        .menu-item-desc { font-size: 0.82rem; color: #999; margin-bottom: 12px; line-height: 1.4; }
+        
+        .qty-control { display: flex; align-items: center; justify-content: space-between; background: #0b0b0b; border: 1px solid #2a2a2a; border-radius: 8px; padding: 4px; }
+        .qty-btn { background: #d4af37; color: #000; border: none; width: 32px; height: 32px; border-radius: 6px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .qty-display { font-weight: 700; color: #fff; font-size: 1rem; }
+
+        #cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; border-top: 2px solid #d4af37; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 500; transform: translateY(100%); transition: transform 0.3s ease-in-out; box-shadow: 0 -5px 20px rgba(0,0,0,0.8); }
+        #cart-bar.active { transform: translateY(0); }
+        
+        .whatsapp-btn { background: #25d366; color: white; border: none; padding: 9px 18px; border-radius: 30px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 0.95rem; }
+        .cart-open-btn { background: #1c1c1c; color: #d4af37; border: 1px solid #d4af37; padding: 8px 16px; border-radius: 30px; font-weight: 700; cursor: pointer; }
+
+        #cart-modal, #admin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 10px; }
+        .modal-box { background: #141414; border: 1px solid #d4af37; width: 100%; max-width: 550px; padding: 20px; border-radius: 14px; color: #fff; max-height: 90vh; display: flex; flex-direction: column; position: relative; }
+        .close-modal { position: absolute; top: 12px; left: 12px; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #888; }
+        .close-modal:hover { color: #d4af37; }
+
+        .admin-edit-card { background: #0b0b0b; border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .admin-edit-row { display: flex; gap: 8px; }
+        .admin-edit-row input { width: 100%; padding: 8px; background: #181818; border: 1px solid #444; color: #fff; border-radius: 6px; font-size: 0.9rem; }
+        .save-item-btn { background: #27ae60; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .delete-item-btn { background: #e74c3c; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .cart-items-list, .admin-items-list { overflow-y: auto; max-height: 55vh; margin-bottom: 10px; padding-right: 4px; }
+    </style>
+</head>
+<body>
+
+    <div id="splash-screen">
+        <div class="splash-logo">M & S</div>
+        <div class="splash-sub">مطعم الذوق الراقي والفخامة</div>
+        <button class="btn-view-menu" onclick="enterMenu()">تصفح المنيو</button>
+    </div>
+
+    <header>
+        <div class="header-top">
+            <div style="width: 70px;"></div>
+            <h1>M & S RESTAURANT</h1>
+            <div style="width: 70px;"></div>
+        </div>
+        <div class="categories-nav">
+            <button class="cat-btn active" onclick="filterMenu('all', this)">الكل</button>
+            <button class="cat-btn" onclick="filterMenu('وجبات', this)">وجبات</button>
+            <button class="cat-btn" onclick="filterMenu('سندويش', this)">سندويش</button>
+            <button class="cat-btn" onclick="filterMenu('مقبلات', this)">مقبلات</button>
+            <button class="cat-btn" onclick="filterMenu('عصائر ومشروبات', this)">مشروبات</button>
+        </div>
+        <button class="admin-trigger-btn" onclick="checkAdminPassword()"><i class="fa-solid fa-lock"></i> إدارة القائمة</button>
+    </header>
+
+    <div class="container">
+        <div class="menu-grid" id="menuGrid">
+            <p style="grid-column: 1/-1; text-align:center; color:#888; padding: 40px;">جاري تحميل أطباق M&S الفاخرة من السيرفر...</p>
+        </div>
+    </div>
+
+    <div id="cart-bar">
+        <div style="font-weight: 700;">القطع: <span id="cartCount">0</span> | الإجمالي: <span id="cartTotal">0</span> ل.س</div>
+        <div style="display: flex; gap: 8px;">
+            <button class="cart-open-btn" onclick="openCartModal()">السلة</button>
+            <button class="whatsapp-btn" onclick="sendToWhatsApp()"><i class="fa-brands fa-whatsapp"></i> طلب واتساب</button>
+        </div>
+    </div>
+
+    <div id="cart-modal">
+        <div class="modal-box">
+            <button class="close-modal" onclick="closeCartModal()"><i class="fa-solid fa-xmark"></i></button>
+            <h2 style="color:#d4af37; margin-bottom:15px; font-size: 1.3rem;">مشترياتك في السلة</h2>
+            <div class="cart-items-list" id="cartItemsList"></div>
+            <button class="whatsapp-btn" style="width:100%; justify-content:center; margin-top:10px; padding: 12px;" onclick="sendToWhatsApp()">إرسال الطلب عبر واتساب</button>
+        </div>
+    </div>
+
+    <div id="admin-modal">
+        <div class="modal-box">
+            <button class="close-modal" onclick="closeAdminModal()"><i class="fa-solid fa-xmark"></i></button>
+            <h2 style="color:#d4af37; margin-bottom:15px; font-size: 1.3rem;">لوحة إدارة أسعار M&S</h2>
+            <div class="admin-items-list" id="adminEditList"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // مفاتيح مشروعك الجديد (samir-5af07) المربوطة حالياً
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDRyYF9qE-fjVwu46Mk645BHCyCUwwgEw",
+            authDomain: "samir-5af07.firebaseapp.com",
+            projectId: "samir-5af07",
+            storageBucket: "samir-5af07.firebasestorage.app",
+            messagingSenderId: "795864983264",
+            appId: "1:795864983264:web:196ea684d6ee3f417cd285",
+            measurementId: "G-7WNHZWPWLN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let menuItems = [];
+        let cart = {}; 
+        let currentFilter = 'all';
+
+        async function fetchMenuItems() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "ms_menu"));
+                menuItems = [];
+                querySnapshot.forEach((docSnap) => {
+                    menuItems.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                if (menuItems.length === 0) {
+                    await seedDefaultItems();
+                }
+
+                refreshActiveMenu();
+            } catch (error) {
+                console.error("خطأ بالاتصال:", error);
+                document.getElementById('menuGrid').innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#e74c3c; padding: 40px;">تعذر الاتصال بقاعدة البيانات. تأكد من ضبط قواعد الأمان (Rules) في الفايربيز.</p>`;
+            }
+        }
+
+        async function seedDefaultItems() {
+            let defaultItems = [
+                { id: "1", name: "برغر M&S العائلي الفاخر", category: "وجبات", price: 55000, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500", desc: "لحم أنجوس مدخن مع جبنة الشيدر وصلصة M&S الخاصة." },
+                { id: "2", name: "وجبة ستيك لحم مينيون", category: "وجبات", price: 95000, image: "https://images.unsplash.com/photo-1558030006-450675393462?w=500", desc: "قطعة ستيك طرية مع صوص المشروم والبطاطا المهروسة." },
+                { id: "3", name: "وجبة شيش طاووق ملكي", category: "وجبات", price: 48000, image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500", desc: "أسياخ دجاج مشوية عالفحم مع الأرز المبهر والثومية." },
+                { id: "4", name: "وجبة إسكالوب دجاج مقرمش", category: "وجبات", price: 46000, image: "https://images.unsplash.com/photo-1562967916-eb82221dfb92?w=500", desc: "صدر دجاج مغلف بالبقسماط المقرمش مع البطاطا والصلصة." },
+                { id: "5", name: "وجبة فاهيتا دجاج مكسيكية", category: "وجبات", price: 49000, image: "https://images.unsplash.com/photo-1529007196863-d0dce800956b?w=500", desc: "قطع دجاج متبلة مع الفليفلة الملونة والجبن الذائب." },
+                { id: "6", name: "سندويش زينجر دجاج حار", category: "سندويش", price: 25000, image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=500", desc: "دجاج كريسبي حار مع صوص المايونيز والخص." },
+                { id: "7", name: "سندويش فيلادلفيا لحم", category: "سندويش", price: 32000, image: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=500", desc: "شرائح لحم رفيعة مع المشروم والجبن السائل." },
+                { id: "8", name: "سندويش شاورما دجاج صاج", category: "سندويش", price: 22000, image: "https://images.unsplash.com/photo-1529007196863-d0dce800956b?w=500", desc: "دجاج متبل مع المخلل والثوم الفاخر بخبز الصاج المحمص." },
+                { id: "9", name: "سندويش راب دجاج كرسبي", category: "سندويش", price: 24000, image: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=500", desc: "قطع دجاج مقرمشة ملفوفة بخبز التورتيلا." },
+                { id: "10", name: "سندويش برغر لحم كلاسيك", category: "سندويش", price: 28000, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500", desc: "قرص لحم بقري صافي مع البصل والخس والطماطم." },
+                { id: "11", name: "بطاطا مقلية بالجبنة والباكن", category: "مقبلات", price: 18000, image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=500", desc: "بطاطا ذهبية مقرمشة مغطاة بجبنة الشيدر الساخنة." },
+                { id: "12", name: "أصابع الجبن المقلية (6 قطع)", category: "مقبلات", price: 16000, image: "https://images.unsplash.com/photo-1548340798-3d607871b69f?w=500", desc: "أصابع الموزاريلا المقرمشة مع صوص المارينارا." },
+                { id: "13", name: "سلطة سيزر بالدجاج", category: "مقبلات", price: 20000, image: "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=500", desc: "خس روماني طازج، شرائح دجاج، خبز محمص وجبن بارميزان." },
+                { id: "14", name: "سلطة يونانية بالجبنة", category: "مقبلات", price: 17000, image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500", desc: "خضار طازجة مع قطع جبنة الفيتا والزيتون الأسود." },
+                { id: "15", name: "حبات الكبة المقلية (4 قطع)", category: "مقبلات", price: 15000, image: "https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=500", desc: "كبة محشية باللحمة المفرومة والمكسرات." },
+                { id: "16", name: "عصير برتقال طبيعي طازج", category: "عصائر ومشروبات", price: 14000, image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500", desc: "عصير برتقال طبيعي 100% معصور بحرارة المنضدة." },
+                { id: "17", name: "عصير كوكتيل فواكه M&S", category: "عصائر ومشروبات", price: 18000, image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=500", desc: "تشكيلة فواكه موسمية طازجة مزينة بالقشطة والعسل." },
+                { id: "18", name: "موهيتو ليمون و نعناع", category: "عصائر ومشروبات", price: 15000, image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=500", desc: "مشروب منعش بالنعناع الطازج والليمون والصودا." },
+                { id: "19", name: "ميلك شيك شوكولاتة فاخر", category: "عصائر ومشروبات", price: 19000, image: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=500", desc: "آيس كريم شوكولاتة غني مع الحليب الطازج والتشوكلت سبريد." },
+                { id: "20", name: "مشروب غازي (كولا / سبرايت)", category: "عصائر ومشروبات", price: 8000, image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500", desc: "عبوة باردة ومنعشة." }
+            ];
+
+            for (let item of defaultItems) {
+                await setDoc(doc(db, "ms_menu", item.id), item);
+                menuItems.push(item);
+            }
+        }
+
+        window.enterMenu = function() { document.getElementById('splash-screen').classList.add('hidden'); };
+
+        function renderMenu(itemsToRender) {
+            const grid = document.getElementById('menuGrid');
+            grid.innerHTML = '';
+            itemsToRender.forEach(item => {
+                let qty = cart[item.id] || 0;
+                grid.innerHTML += `
+                    <div class="menu-item">
+                        <img src="${item.image}" alt="${item.name}">
+                        <div class="menu-item-content">
+                            <div>
+                                <div class="menu-item-header">
+                                    <span class="menu-item-title">${item.name}</span>
+                                    <span class="menu-item-price">${item.price.toLocaleString()} ل.س</span>
+                                </div>
+                                <p class="menu-item-desc">${item.desc || ''}</p>
+                            </div>
+                            <div class="qty-control">
+                                <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
+                                <span class="qty-display" id="qty-${item.id}">${qty}</span>
+                                <button class="qty-btn" onclick="changeQty('${item.id}', -1)">-</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.filterMenu = function(category, btnElement) {
+            currentFilter = category;
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            if (category === 'all') renderMenu(menuItems);
+            else renderMenu(menuItems.filter(i => i.category === category));
+        };
+
+        window.changeQty = function(id, change) {
+            if (!cart[id]) cart[id] = 0;
+            cart[id] += change;
+            if (cart[id] <= 0) delete cart[id];
+            let q = document.getElementById(`qty-${id}`);
+            if (q) q.textContent = cart[id] || 0;
+            updateBar();
+        };
+
+        function updateBar() {
+            let totalCount = Object.values(cart).reduce((a, b) => a + b, 0);
+            let totalPrice = 0;
+            for (let id in cart) {
+                let item = menuItems.find(i => i.id == id);
+                if (item) totalPrice += item.price * cart[id];
+            }
+            const bar = document.getElementById('cart-bar');
+            if (totalCount > 0) {
+                bar.classList.add('active');
+                document.getElementById('cartCount').textContent = totalCount;
+                document.getElementById('cartTotal').textContent = totalPrice.toLocaleString();
+            } else { bar.classList.remove('active'); }
+        }
+
+        window.checkAdminPassword = function() {
+            let p = prompt("أدخل كلمة المرور الخاصة بالإدارة (1234):");
+            if (p === "1234") {
+                renderAdminList();
+                document.getElementById('admin-modal').style.display = 'flex';
+            } else if (p !== null) alert("كلمة المرور غير صحيحة!");
+        };
+
+        window.closeAdminModal = function() { document.getElementById('admin-modal').style.display = 'none'; refreshActiveMenu(); };
+
+        function renderAdminList() {
+            const list = document.getElementById('adminEditList');
+            list.innerHTML = '';
+            menuItems.forEach(item => {
+                list.innerHTML += `
+                    <div class="admin-edit-card">
+                        <div style="font-size: 0.85rem; color:#d4af37; font-weight:bold;">${item.name}</div>
+                        <div class="admin-edit-row">
+                            <input type="text" id="name-${item.id}" value="${item.name}">
+                            <input type="number" id="price-${item.id}" value="${item.price}">
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:4px;">
+                            <button class="save-item-btn" onclick="saveItem('${item.id}')">حفظ التعديل</button>
+                            <button class="delete-item-btn" onclick="deleteItem('${item.id}')">حذف</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.saveItem = async function(id) {
+            let item = menuItems.find(i => i.id == id);
+            if (item) {
+                item.name = document.getElementById(`name-${id}`).value;
+                item.price = Number(document.getElementById(`price-${id}`).value);
+                try {
+                    await setDoc(doc(db, "ms_menu", String(id)), item);
+                    alert("تم حفظ التعديل بنجاح في السيرفر!");
+                } catch(e) {
+                    alert("حدث خطأ أثناء الحفظ بالسيرفر.");
+                }
+                refreshActiveMenu();
+            }
+        };
+
+        window.deleteItem = async function(id) {
+            if (confirm("هل أنت متأكد من حذف هذا الصنف نهائياً؟")) {
+                try {
+                    await deleteDoc(doc(db, "ms_menu", String(id)));
+                } catch(e) {}
+                menuItems = menuItems.filter(i => i.id !== id);
+                renderAdminList();
+                refreshActiveMenu();
+            }
+        };
+
+        window.openCartModal = function() {
+            const list = document.getElementById('cartItemsList');
+            list.innerHTML = '';
+            let total = 0;
+            for (let id in cart) {
+                let item = menuItems.find(i => i.id == id);
+                if (item) {
+                    let subTotal = item.price * cart[id];
+                    total += subTotal;
+                    list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:#0b0b0b; padding:10px; border-radius:8px; border:1px solid #222;">
+                        <div><div style="font-weight:700;">${item.name}</div><div style="font-size:0.8rem; color:#888;">الكمية: ${cart[id]}</div></div>
+                        <div style="color:#d4af37; font-weight:bold;">${subTotal.toLocaleString()} ل.س</div>
+                    </div>`;
+                }
+            }
+            if(total === 0) list.innerHTML = `<p style="text-align:center; color:#888; padding:30px;">السلة فارغة حالياً</p>`;
+            document.getElementById('cart-modal').style.display = 'flex';
+        };
+        window.closeCartModal = function() { document.getElementById('cart-modal').style.display = 'none'; };
+
+        window.sendToWhatsApp = function() {
+            let msg = "مرحباً، أود طلب الأطباق التالية من مطعم M&S:\n\n";
+            let total = 0;
+            for (let id in cart) {
+                let item = menuItems.find(i => i.id == id);
+                if (item) {
+                    msg += `▪️ ${item.name} (العدد: ${cart[id]}) - ${(item.price * cart[id]).toLocaleString()} ل.س\n`;
+                    total += item.price * cart[id];
+                }
+            }
+            if(total === 0) {
+                alert("السلة فارغة! الرجاء اختيار منتجات أولاً.");
+                return;
+            }
+            msg += `\n💰 الإجمالي الكلي: ${total.toLocaleString()} ل.س`;
+            window.open(`https://wa.me/963900000000?text=${encodeURIComponent(msg)}`, '_blank');
+        };
+
+        function refreshActiveMenu() {
+            if (currentFilter === 'all') renderMenu(menuItems);
+            else renderMenu(menuItems.filter(i => i.category === currentFilter));
+        }
+
+        fetchMenuItems();
+    </script>
+</body>
+</html>
